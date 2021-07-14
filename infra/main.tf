@@ -7,9 +7,9 @@ terraform {
 
   backend "s3" {
     bucket         = "moggies.io-terraform-state-backend"
-    key            = "api-terraform.state"
+    key            = "playbooks-api-terraform.state"
     region         = "eu-west-1"
-    dynamodb_table = "moggies.io-api-terraform_state"
+    dynamodb_table = "moggies.io-playbooks-api-terraform_state"
   }
 }
 
@@ -47,12 +47,12 @@ locals {
 }
 
 resource "aws_api_gateway_rest_api" "_" {
-  name        = "MoggiezAPI"
-  description = "Moggiez Data API for managing playbooks and customer data"
+  name        = "playbooks-api"
+  description = "Playbooks API for managing playbooks and customer data"
 }
 
 resource "aws_api_gateway_authorizer" "_" {
-  name          = "MoggiesUserAuthorizer"
+  name          = "playbooks-api-UserAuthorizer"
   rest_api_id   = aws_api_gateway_rest_api._.id
   type          = "COGNITO_USER_POOLS"
   provider_arns = ["arn:aws:cognito-idp:${var.region}:${var.account}:userpool/${var.user_pool_id}"]

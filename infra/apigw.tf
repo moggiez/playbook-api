@@ -32,7 +32,7 @@ module "playbooks_gateway_cors" {
 module "playbookId_path_part" {
   source             = "git@github.com:moggiez/terraform-modules.git//lambda_gateway"
   api                = aws_api_gateway_rest_api._
-  parent_resource    = module.orgId_path_part.api_resource
+  parent_resource    = module.playbooks_path_part.api_resource
   lambda             = module.playbooks_lambda.lambda
   http_methods       = local.http_methods
   resource_path_part = "{playbookId}"
