@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "test": "jest --coverage --collectCoverageFrom='code/**/*.js' --silent --ci --testLocationInResults --json --outputFile='report.json'",
+    "lint": "prettier --check code/**/*.js",
+    "format": "prettier --write code/**/*.js"
+  },
+  "devDependencies": {
+    "jest": "^27.0.5",
+    "prettier": "2.3.2"
+  }
+}

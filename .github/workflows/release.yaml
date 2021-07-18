@@ -1,67 +1,12 @@
-name: "Pull Request"
+name: "Release"
 
 on:
-  pull_request:
-    branches:
-      - master
+  release:
+    types: [published]
 
 jobs:
-  lint_and_test:
-    name: "Lint & Test"
-    runs-on: ubuntu-latest
-    environment: production
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-      AWS_DEFAULT_REGION: "eu-west-1"
-
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: eu-west-1
-
-      - name: Login to NPM
-        run: make npm-auth
-
-      - name: Build lambdas and libs dev
-        run: make build-dev
-
-      - name: Install NPM modules
-        run: npm i
-
-      - name: Lint code
-        run: make lint
-
-      - name: Install Jest
-        run: npm i -g jest
-
-      - name: Run test
-        run: make test
-
-      - name: Run coverage report
-        uses: artiomtr/jest-coverage-report-action@v2.0-rc.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          test-script: npm run test
-          #   threshold: 80 # optional parameter
-
   terraform:
-    name: "Infrastructure as code"
+    name: "Create infrastructure"
     runs-on: ubuntu-latest
     environment: production
     env:
@@ -109,15 +54,32 @@ jobs:
         with:
           node-version: "14"
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: eu-west-1
+
       - name: Login to NPM
         run: make npm-auth
 
       - name: Build lambdas
         run: make build
 
-      # Build packages and generates an execution plan for Terraform
+      # Builds lambda packages and generates an execution plan for Terraform
       - name: Preview deployment
         run: make infra-preview
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_DEFAULT_REGION: "eu-west-1"
+
+      # On push to master, build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+      - name: Deploy
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: make infra-deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}

@@ -33,6 +33,23 @@ class Handler {
     }
   };
 
+  _getAllPlaybooks = async (organisationId) => {
+    try {
+      const data = await this.table.query({
+        hashKey: organisationId,
+        indexName: "OrganisationPlaybooks",
+        filter: {
+          expression: "Version = :version",
+          attributes: { version: "v0" },
+        },
+      });
+
+      return data.Items;
+    } catch (err) {
+      throw err;
+    }
+  };
+
   _getPlaybookVersions = async (playbookId) => {
     try {
       const data = await this.table.query({
@@ -81,10 +98,14 @@ class Handler {
 
   get = async (organisationId, playbookId, version, response) => {
     try {
-      response(
-        200,
-        await this._getPlaybook(organisationId, playbookId, version)
-      );
+      if (playbookId) {
+        response(
+          200,
+          await this._getPlaybook(organisationId, playbookId, version)
+        );
+      } else {
+        response(200, await this._getAllPlaybooks(organisationId));
+      }
     } catch (err) {
       response(500, err);
     }
@@ -100,6 +121,7 @@ class Handler {
         sortKey: "v0",
         record,
       });
+
       response(200, data);
     } catch (err) {
       response(500, err);
@@ -113,10 +135,10 @@ class Handler {
       const data = await this.table.update({
         hashKey: playbookId,
         sortKey: "v0",
-        record,
+        updatedFields: record,
       });
 
-      const latestVersion = `v${data.Latest}`;
+      const latestVersion = `v${data.Attributes.Latest}`;
       const newVersionData = await this.table.create({
         hashKey: playbookId,
         sortKey: latestVersion,
@@ -138,8 +160,11 @@ class Handler {
         }
       });
       for (let i = 0; i < playbookVersions.length; i++) {
-        const pb = playbookVersions[0];
-        await this.table.delete(pb.PlaybookId, pb.Version);
+        const pb = playbookVersions[i];
+        await this.table.delete({
+          hashKey: pb.PlaybookId,
+          sortKey: pb.Version,
+        });
       }
       response(200, {});
     } catch (err) {
