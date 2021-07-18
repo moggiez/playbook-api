@@ -28,17 +28,14 @@ data "aws_route53_zone" "public" {
 }
 
 locals {
-}
-
-locals {
   environment = "PROD"
 
   hosted_zone           = data.aws_route53_zone.public
   authorization_enabled = true
 
   # API GW Locals
-  stages       = toset(["blue", "green"])
-  stage        = "blue"
+  stages = toset(["blue", "green"])
+  stage  = "blue"
 }
 
 locals {

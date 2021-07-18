@@ -9,7 +9,7 @@ const { Handler } = require("./handler");
 
 const DEBUG = false;
 
-const debug = (response) => {
+const debug = (event, response) => {
   if (DEBUG) {
     response(200, event);
   }
@@ -25,7 +25,7 @@ const getRequest = (event) => {
 
 exports.handler = function (event, context, callback) {
   const response = helpers.getResponseFn(callback);
-  debug(response);
+  debug(event, response);
 
   const table = new db.Table({
     config: db.tableConfigs.playbook_versions,

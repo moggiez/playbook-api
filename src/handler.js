@@ -15,7 +15,7 @@ class Handler {
   _getPlaybook = async (organisationId, playbookId, version) => {
     try {
       const v = version ? version : "v0";
-      const data = await table.query({
+      const data = await this.table.query({
         hashKey: organisationId,
         sortKey: playbookId,
         indexName: "OrganisationPlaybooks",
@@ -25,9 +25,9 @@ class Handler {
         },
       });
       const items = "Items" in data ? data.Items : [data.Item];
-      const latestOnly = items.filter((item, index) => item.Version == v);
+      const latestOnly = items.filter((item, _) => item.Version == v);
 
-      return latestOnly.length > 0 ? latestOnly[0] : null;
+      return latestOnly.length > 0 ? latestOnly[0] : "";
     } catch (err) {
       throw err;
     }
@@ -35,13 +35,11 @@ class Handler {
 
   _getPlaybookVersions = async (playbookId) => {
     try {
-      const data = await table.query({
+      const data = await this.table.query({
         hashKey: playbookId,
       });
-      const items = "Items" in data ? data.Items : [data.Item];
-      const latestOnly = items.filter((item, index) => item.Version == v);
 
-      return latestOnly;
+      return "Items" in data ? data.Items : [data.Item];
     } catch (err) {
       throw err;
     }
@@ -51,16 +49,28 @@ class Handler {
     try {
       if (req.httpMethod == "GET") {
         this.get(
-          req.organisationId,
-          "playbookId" in req ? req.playbookId : null,
+          req.pathParameters.organisationId,
+          "playbookId" in req.pathParameters
+            ? req.pathParameters.playbookId
+            : null,
+          "v0",
           res
         );
       } else if (req.httpMethod == "POST") {
-        this.post(req.organisationId, payload, res);
+        this.post(req.pathParameters.organisationId, req.body, res);
       } else if (req.httpMethod == "PUT") {
-        this.put(req.organisationId, req.playbookId, payload, res);
+        this.put(
+          req.pathParameters.organisationId,
+          req.pathParameters.playbookId,
+          req.body,
+          res
+        );
       } else if (req.httpMethod == "DELETE") {
-        this.delete(req.organisationId, req.playbookId, res);
+        this.delete(
+          req.pathParameters.organisationId,
+          req.pathParameters.playbookId,
+          res
+        );
       } else {
         res(500, "Not supported.");
       }
@@ -83,7 +93,7 @@ class Handler {
   post = async (organisationId, payload, response) => {
     try {
       const record = { ...payload };
-      record.OrgnisationId = organisationId;
+      record.OrganisationId = organisationId;
 
       const data = await this.table.create({
         hashKey: uuid.v4(),
@@ -99,7 +109,7 @@ class Handler {
   put = async (organisationId, playbookId, payload, response) => {
     try {
       const record = { ...payload };
-      record.OrgnisationId = organisationId;
+      record.OrganisationId = organisationId;
       const data = await this.table.update({
         hashKey: playbookId,
         sortKey: "v0",
@@ -123,16 +133,17 @@ class Handler {
     try {
       const playbookVersions = await this._getPlaybookVersions(playbookId);
       playbookVersions.forEach((pb, _) => {
-        if (pb.OrgnisationId != organisationId) {
+        if (pb.OrganisationId != organisationId) {
           throw new Error(403, "Forbidden");
         }
       });
-      for (i = 0; i < playbookVersions.length; i++) {
+      for (let i = 0; i < playbookVersions.length; i++) {
+        const pb = playbookVersions[0];
         await this.table.delete(pb.PlaybookId, pb.Version);
       }
       response(200, {});
     } catch (err) {
-      response(500, err, config.headers);
+      response(500, err);
     }
   };
 }
