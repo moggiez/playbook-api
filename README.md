@@ -1,1 +1,1 @@
-# playbook-api
+# playbooks-api

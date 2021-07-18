@@ -39,7 +39,6 @@ locals {
   # API GW Locals
   stages       = toset(["blue", "green"])
   stage        = "blue"
-  http_methods = toset(["GET", "POST", "PUT", "DELETE"])
 }
 
 locals {

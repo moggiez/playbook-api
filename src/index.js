@@ -1,33 +1,37 @@
 "use strict";
+const AWS = require("aws-sdk");
 
-const uuid = require("uuid");
-const config = require("./config");
+const db = require("moggies-db");
 const helpers = require("moggies-lambda-helpers");
-const handlers = require("./handlers");
+const auth = require("moggies-auth");
+
+const { Handler } = require("./handler");
+
+const DEBUG = false;
+
+const debug = (response) => {
+  if (DEBUG) {
+    response(200, event);
+  }
+};
+
+const getRequest = (event) => {
+  const user = auth.getUserFromEvent(event);
+  const request = helpers.getRequestFromEvent(event);
+  request.user = user;
+
+  return request;
+};
 
 exports.handler = function (event, context, callback) {
   const response = helpers.getResponseFn(callback);
+  debug(response);
 
-  if (config.DEBUG) {
-    response(200, event, config.headers);
-  }
-  const request = helpers.getRequestFromEvent(event);
+  const table = new db.Table({
+    config: db.tableConfigs.playbook_versions,
+    AWS: AWS,
+  });
+  const handler = new Handler(table);
 
-  try {
-    const organisationId = request.getPathParamAtIndex(0, "");
-    const playbookId = request.getPathParamAtIndex(1, null);
-    const playbook = request.body;
-
-    if (request.httpMethod == "GET") {
-      handlers.get(organisationId, playbookId, response);
-    } else if (request.httpMethod == "POST") {
-      handlers.post(organisationId, uuid.v4(), playbook, response);
-    } else if (request.httpMethod == "PUT") {
-      handlers.put(organisationId, playbookId, playbook, response);
-    } else {
-      response(403, "Not supported.", config.headers);
-    }
-  } catch (err) {
-    response(500, err, config.headers);
-  }
+  handler.handle(getRequest(event), response);
 };

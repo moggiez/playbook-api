@@ -9,7 +9,7 @@ resource "aws_acm_certificate" "_" {
   }
 
   tags = {
-    Name = "playbook-api SSL certificate"
+    Name = "playbooks-api SSL certificate"
   }
 }
 

@@ -21,13 +21,13 @@ infra-preview: modules-cleanup
 
 # CODE
 build-cleanup:
-	rm -rf ./dist/* & mkdir -p dist
+	rm -rf ./dist/* & mkdir -p dist && rm -rf ./src/node_modules
 
 build: build-cleanup
-	cd src && npm i && zip -r ../dist/playbooks-api.zip ./
+	cd src && npm i --only=prod && zip -r ../dist/playbooks-api.zip ./
 
 build-dev: build-cleanup
-	cd src && npm i --only=prod
+	cd src && npm i
 
 lint:
 	cd src && npm run lint

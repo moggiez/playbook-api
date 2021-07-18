@@ -2,7 +2,7 @@ module "orgId_path_part" {
   source             = "git@github.com:moggiez/terraform-modules.git//lambda_gateway"
   api                = aws_api_gateway_rest_api._
   lambda             = module.playbooks_lambda.lambda
-  http_methods       = local.http_methods
+  http_methods       = toset([])
   resource_path_part = "{organisationId}"
   authorizer         = local.authorizer
 }
@@ -18,7 +18,7 @@ module "playbooks_path_part" {
   api                = aws_api_gateway_rest_api._
   parent_resource    = module.orgId_path_part.api_resource
   lambda             = module.playbooks_lambda.lambda
-  http_methods       = local.http_methods
+  http_methods       = toset(["GET", "POST"])
   resource_path_part = "playbooks"
   authorizer         = local.authorizer
 }
@@ -34,7 +34,7 @@ module "playbookId_path_part" {
   api                = aws_api_gateway_rest_api._
   parent_resource    = module.playbooks_path_part.api_resource
   lambda             = module.playbooks_lambda.lambda
-  http_methods       = local.http_methods
+  http_methods       = toset(["GET", "POST", "PUT", "DELETE"])
   resource_path_part = "{playbookId}"
   authorizer         = local.authorizer
 }

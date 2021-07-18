@@ -1,4 +1,5 @@
 "use strict";
+const uuid = require("uuid");
 
 class Handler {
   constructor(table) {
@@ -46,6 +47,28 @@ class Handler {
     }
   };
 
+  handle = async (req, res) => {
+    try {
+      if (req.httpMethod == "GET") {
+        this.get(
+          req.organisationId,
+          "playbookId" in req ? req.playbookId : null,
+          res
+        );
+      } else if (req.httpMethod == "POST") {
+        this.post(req.organisationId, payload, res);
+      } else if (req.httpMethod == "PUT") {
+        this.put(req.organisationId, req.playbookId, payload, res);
+      } else if (req.httpMethod == "DELETE") {
+        this.delete(req.organisationId, req.playbookId, res);
+      } else {
+        res(500, "Not supported.");
+      }
+    } catch (err) {
+      res(500, err);
+    }
+  };
+
   get = async (organisationId, playbookId, version, response) => {
     try {
       response(
@@ -57,13 +80,13 @@ class Handler {
     }
   };
 
-  post = async (organisationId, playbookId, payload, response) => {
+  post = async (organisationId, payload, response) => {
     try {
       const record = { ...payload };
       record.OrgnisationId = organisationId;
 
       const data = await this.table.create({
-        hashKey: playbookId,
+        hashKey: uuid.v4(),
         sortKey: "v0",
         record,
       });
