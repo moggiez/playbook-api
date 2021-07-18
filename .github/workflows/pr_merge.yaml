@@ -77,11 +77,6 @@ jobs:
         shell: bash
 
     steps:
-      - name: setup-git-ssh-key
-        uses: webfactory/ssh-agent@v0.5.2
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout
         uses: actions/checkout@v2
