@@ -47,7 +47,7 @@ jobs:
 
       # Checks that all Terraform configuration files adhere to a canonical format
       - name: Lint (terraform code only)
-        run: cd infrastructure && terraform fmt -check
+        run: cd infra && terraform fmt -check
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
