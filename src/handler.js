@@ -70,7 +70,7 @@ class Handler {
           "playbookId" in req.pathParameters
             ? req.pathParameters.playbookId
             : null,
-          "v0",
+          "version" in req.pathParameters ? req.pathParameters.version : "v0",
           res
         );
       } else if (req.httpMethod == "POST") {

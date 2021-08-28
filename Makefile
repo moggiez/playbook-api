@@ -30,13 +30,13 @@ build-dev: build-cleanup
 	cd src && npm i
 
 lint:
-	cd src && npm run lint
+	npm run lint
 
 format:
-	cd src && npm run format
+	npm run format
 
 test:
-	cd src && npm run test
+	npm run test
 
 update-lambda-fn:
 	aws lambda update-function-code --function-name playbooks-api --zip-file fileb://$(shell pwd)/dist/playbooks-api.zip --publish | jq .FunctionArn

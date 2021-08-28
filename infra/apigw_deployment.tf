@@ -5,7 +5,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     module.orgId_path_part,
     module.playbooks_path_part,
-    module.playbookId_path_part
+    module.playbookId_path_part,
+    module.playbooks_versions_path_part,
+    module.version_path_path
   ]
 
   rest_api_id = aws_api_gateway_rest_api._.id
