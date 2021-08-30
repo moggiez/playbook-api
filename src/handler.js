@@ -65,7 +65,7 @@ class Handler {
   handle = async (req, res) => {
     try {
       if (req.httpMethod == "GET") {
-        this.get(
+        await this.get(
           req.pathParameters.organisationId,
           "playbookId" in req.pathParameters
             ? req.pathParameters.playbookId
@@ -74,16 +74,16 @@ class Handler {
           res
         );
       } else if (req.httpMethod == "POST") {
-        this.post(req.pathParameters.organisationId, req.body, res);
+        await this.post(req.pathParameters.organisationId, req.body, res);
       } else if (req.httpMethod == "PUT") {
-        this.put(
+        await this.put(
           req.pathParameters.organisationId,
           req.pathParameters.playbookId,
           req.body,
           res
         );
       } else if (req.httpMethod == "DELETE") {
-        this.delete(
+        await this.delete(
           req.pathParameters.organisationId,
           req.pathParameters.playbookId,
           res
@@ -116,13 +116,14 @@ class Handler {
       const record = { ...payload };
       record.OrganisationId = organisationId;
 
+      const playbookId = uuid.v4();
       const data = await this.table.create({
-        hashKey: uuid.v4(),
+        hashKey: playbookId,
         sortKey: "v0",
         record,
       });
 
-      response(200, data);
+      response(200, { ...data, PlaybookId: playbookId });
     } catch (err) {
       response(500, err);
     }

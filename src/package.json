@@ -6,9 +6,9 @@
     "moggiez"
   ],
   "dependencies": {
-    "moggies-db": "^0.1.7",
-    "moggies-lambda-helpers": "^0.1.2",
-    "moggies-auth": "^0.1.1",
+    "@moggiez/moggies-db": "0.2.0",
+    "@moggiez/moggies-lambda-helpers": "^0.2.2",
+    "@moggiez/moggies-auth": "^0.2.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
