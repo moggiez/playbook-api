@@ -6,6 +6,7 @@ const helpers = require("@moggiez/moggies-lambda-helpers");
 const auth = require("@moggiez/moggies-auth");
 
 const { Handler } = require("./handler");
+const { InternalHandler } = require("./internalHandler");
 
 const DEBUG = false;
 
@@ -43,7 +44,17 @@ exports.handler = async function (event, context, callback) {
     config: TABLE_CONFIG,
     AWS: AWS,
   });
-  const handler = new Handler(table);
 
-  await handler.handle(getRequest(event), response);
+  if ("isInternal" in event && event.isInternal) {
+    if (DEBUG) {
+      return event;
+    }
+
+    const internalHandler = new InternalHandler({ table });
+    return await internalHandler.handle(event);
+  } else {
+    const handler = new Handler(table);
+
+    await handler.handle(getRequest(event), response);
+  }
 };
